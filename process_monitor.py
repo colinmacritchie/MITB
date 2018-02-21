@@ -7,6 +7,24 @@ import wmi
 import sys
 import os
 
+def get_process_privileges(pid):
+    try:
+        hproc = win32api.OpenProcess(win32con.PROCESS_QUERY_INFORMATION,False,pid)
+
+        htok = win32security.OpenProcessToken(hproc,win32con.TOKEN_QUERY)
+
+        privs = win32security.GetTokenInformation(htok, win32security.tokenPrivileges)
+
+        piv_list = ""
+        for i in privs:
+            if i[1] == 3:
+                priv_list += "%s|" & win32security.LookupPrivilegeName(None,i[0])
+    except:
+        priv_list = "N/A"
+
+    return priv_list
+
+
 def log_to_file(message):
     fd = open("process_monitor_log.csv", "ab")
     fd.write("%s\r\n" % message)
@@ -32,7 +50,7 @@ while True:
         pid         = new_process.ProcessId
         parent_pid  = new_process.ParentProcessId
 
-        priviliages = "N/A"
+        priviliages = get_process_privileges(pid)
 
         process_log_messages  = "%s, %s, %s, %s, %s, %s, %s\r\n" % (create_date,
                 proc_owner, excecutable, cmdline, pid, parent_pid, privileges)
